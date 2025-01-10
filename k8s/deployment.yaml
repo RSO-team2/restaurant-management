@@ -37,11 +37,11 @@ kind: Service
 metadata:
   name: fun-food-times-lm3
 spec:
-  type: LoadBalancer
-  ports:
-    - name: http
-      port: 5003
-      protocol: TCP
-      targetPort: 5003
   selector:
     app: fun-food-times-restaurant-management
+  ports:
+    - protocol: TCP
+      port: 5003       
+      targetPort: 5003
+  type: LoadBalancer
+
