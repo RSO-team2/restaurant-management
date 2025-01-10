@@ -1,6 +1,5 @@
 import os
 import psycopg2
-import bcrypt
 from dotenv import load_dotenv
 from flask import Flask, request, jsonify
 
@@ -18,7 +17,7 @@ def add_restaurant():
     res_name = data["name"]
     res_type = data["type"]
 
-    connection = psycopg2.connect("DATABASE_URL")
+    connection = psycopg2.connect(os.getenv("DATABASE_URL"))
 
     with connection:
         with connection.cursor() as cursor:
@@ -34,7 +33,7 @@ def add_menu_item():
     name = data["name"]
     price = data["price"]
 
-    connection = psycopg2.connect("DATABASE_URL")
+    connection = psycopg2.connect(os.getenv("DATABASE_URL"))
 
     with connection:
         with connection.cursor() as cursor:
@@ -49,7 +48,7 @@ def add_menu():
     restaurant_id = data["restaurant_id"]
     items = data["items"]
 
-    connection = psycopg2.connect("DATABASE_URL")
+    connection = psycopg2.connect(os.getenv("DATABASE_URL"))
 
     with connection:
         with connection.cursor() as cursor:
