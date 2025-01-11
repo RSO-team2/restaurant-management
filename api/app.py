@@ -18,7 +18,8 @@ cors = CORS(app)
 metrics = PrometheusMetrics(app)
 
 
-metrics.info('app_info', 'Restaurant Management API Info', version='1.0.0')
+metrics.info("app_info", "Restaurant Management API Info", version="1.0.0")
+
 
 @metrics.counter(
     "by_endpoint_counter",
@@ -53,7 +54,6 @@ def add_restaurant():
                 ),
             )
             res_id = cursor.fetchone()[0]
-            
 
     return jsonify({"restaurant_id": res_id})
 
@@ -84,11 +84,7 @@ def add_menu_item():
         with connection.cursor() as cursor:
             cursor.execute(
                 ADD_MENU_ITEM,
-                (
-                    name,
-                    price,
-                    image
-                ),
+                (name, price, image),
             )
             menu_item_id = cursor.fetchone()[0]
 
@@ -141,7 +137,11 @@ def get_menu_by_id():
             )
             menu = cursor.fetchone()
             menu_items = menu[2]
-    return jsonify({"menu_items": menu_items})
+            menu_items_data = []
+            for item in menu_items:
+                cursor.execute("SELECT * FROM menu_items WHERE id = %s", (item,))
+                menu_items_data.append(cursor.fetchone())
+    return jsonify({"menu_items": menu_items_data})
 
 
 if __name__ == "__main__":
