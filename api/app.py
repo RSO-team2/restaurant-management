@@ -79,6 +79,12 @@ def add_restaurant():
             )
             res_id = cursor.fetchone()[0]
 
+    requests.post(
+        f"{os.getenv('AUTH_ENDPOINT')}/api/link_restaurant",
+        json={"restaurant_id": res_id, "user_id": data["user_id"]},
+        headers={"Content-Type": "application/json"}
+    )
+
     return jsonify({"restaurant_id": res_id})
 
 
