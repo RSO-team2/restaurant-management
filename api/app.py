@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from flask import Flask, jsonify, request
 from flask_cors import CORS, cross_origin
 
-ADD_RESTAURANT = "INSERT INTO restaurants (name, type) VALUES (%s,%s) RETURNING id"
+ADD_RESTAURANT = "INSERT INTO restaurants (name, type, rating, address, average_time, price_range) VALUES (%s,%s,%s,%s,%s,%s) RETURNING id"
 ADD_MENU_ITEM = "INSERT INTO menu_items (name, price) VALUES (%s, %s) RETURNING id"
 ADD_MENU = "INSERT INTO menus (restaurant_id, items) VALUES (%s, %s) RETURNING id"
 load_dotenv()
@@ -20,6 +20,7 @@ def add_restaurant():
     data = request.get_json()
     res_name = data["name"]
     res_type = data["type"]
+    res_rating = data["rating"]
     res_address = data["address"]
     res_avg_time = data["average_time"]
     res_price_range = data["price_range"]
@@ -33,6 +34,7 @@ def add_restaurant():
                 (
                     res_name,
                     res_type,
+                    res_rating,
                     res_address,
                     res_avg_time,
                     res_price_range,
@@ -120,7 +122,9 @@ def get_menu_by_id():
     connection = psycopg2.connect(os.getenv("DATABASE_URL"))
     with connection:
         with connection.cursor() as cursor:
-            cursor.execute("SELECT * FROM menus WHERE restaurant_id = %s", (restaurant_id,))
+            cursor.execute(
+                "SELECT * FROM menus WHERE restaurant_id = %s", (restaurant_id,)
+            )
             menu = cursor.fetchone()
             menu_items = menu[2]
     return jsonify({"menu_items": menu_items})
