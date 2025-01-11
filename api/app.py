@@ -1,5 +1,4 @@
 import os
-
 import psycopg2
 from dotenv import load_dotenv
 from flask import Flask, jsonify, request
@@ -14,6 +13,8 @@ load_dotenv()
 app = Flask(__name__)
 cors = CORS(app)
 metrics = PrometheusMetrics(app) 
+
+metrics.info('app_info', 'Restaurant Management API Info', version='1.0.0')
 
 @metrics.counter(
     'by_endpoint_counter', 'Request count by endpoint',
