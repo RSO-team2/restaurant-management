@@ -4,7 +4,7 @@ import requests
 from dotenv import load_dotenv
 from flask import Flask, jsonify, request, Response
 from flask_cors import CORS, cross_origin
-from prometheus_client import Counter, generate_latest
+from prometheus_flask_exporter import PrometheusMetrics
 
 
 ADD_RESTAURANT = "INSERT INTO restaurants (name, type, rating, address, average_time, price_range, image) VALUES (%s,%s,%s,%s,%s,%s,%s) RETURNING id"
@@ -17,18 +17,11 @@ load_dotenv()
 app = Flask(__name__)
 cors = CORS(app)
 
-# Example metric: A counter for requests
-REQUEST_COUNT = Counter('request_count', 'Total number of requests')
+# Attach Prometheus metrics to the Flask app
+metrics = PrometheusMetrics(app)
 
-@app.route('/')
-def home():
-    REQUEST_COUNT.inc()  
-    return "Welcome to the Restaurant Manager!"
-
-# Expose /metrics for Prometheus
-@app.route('/metrics')
-def metrics():
-    return Response(generate_latest(), content_type='text/plain')
+# Automatically collect standard metrics like request count, response duration, and more
+metrics.info('app_info', 'Restaurant Management API Info', version='1.0.0')
 
 def check_database_connection():
     try:
@@ -78,12 +71,6 @@ def add_restaurant():
                 ),
             )
             res_id = cursor.fetchone()[0]
-
-    requests.post(
-        f"{os.getenv('AUTH_ENDPOINT')}/api/link_restaurant",
-        json={"restaurant_id": res_id, "user_id": data["user_id"]},
-        headers={"Content-Type": "application/json"}
-    )
 
     return jsonify({"restaurant_id": res_id})
 
