@@ -44,6 +44,11 @@ spec:
                 secretKeyRef:
                   name: database-url-secret
                   key: DATABASE_URL
+            - name: AUTH_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: auth-endpoint-secret
+                  key: AUTH_ENDPOINT
 
 ---
 apiVersion: v1
