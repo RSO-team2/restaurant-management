@@ -33,7 +33,7 @@ jobs:
   
         - name: Run tests
           run: |
-            pytest tests/test.py  # Run the specific test file
+            pytest api/tests/test.py  # Run the specific test file
   
         - name: Install doctl
           uses: digitalocean/action-doctl@v2
