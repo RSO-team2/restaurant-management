@@ -4,6 +4,7 @@ import psycopg2
 from dotenv import load_dotenv
 from flask import Flask, jsonify, request
 from flask_cors import CORS, cross_origin
+from prometheus_flask_exporter import PrometheusMetrics
 
 ADD_RESTAURANT = "INSERT INTO restaurants (name, type, rating, address, average_time, price_range) VALUES (%s,%s,%s,%s,%s,%s) RETURNING id"
 ADD_MENU_ITEM = "INSERT INTO menu_items (name, price) VALUES (%s, %s) RETURNING id"
@@ -12,7 +13,12 @@ load_dotenv()
 
 app = Flask(__name__)
 cors = CORS(app)
+metrics = PrometheusMetrics(app) 
 
+@metrics.counter(
+    'by_endpoint_counter', 'Request count by endpoint',
+    labels={'endpoint': lambda: request.endpoint}
+)
 
 @app.post("/add_restaurant")
 @cross_origin()
