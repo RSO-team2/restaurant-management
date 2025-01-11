@@ -1,25 +1,29 @@
 import os
 
 import psycopg2
+import requests
 from dotenv import load_dotenv
 from flask import Flask, jsonify, request
 from flask_cors import CORS, cross_origin
 from prometheus_flask_exporter import PrometheusMetrics
 
-ADD_RESTAURANT = "INSERT INTO restaurants (name, type, rating, address, average_time, price_range) VALUES (%s,%s,%s,%s,%s,%s) RETURNING id"
-ADD_MENU_ITEM = "INSERT INTO menu_items (name, price) VALUES (%s, %s) RETURNING id"
+ADD_RESTAURANT = "INSERT INTO restaurants (name, type, rating, address, average_time, price_range, image) VALUES (%s,%s,%s,%s,%s,%s,%s) RETURNING id"
+ADD_MENU_ITEM = (
+    "INSERT INTO menu_items (name, price, image) VALUES (%s, %s, %s) RETURNING id"
+)
 ADD_MENU = "INSERT INTO menus (restaurant_id, items) VALUES (%s, %s) RETURNING id"
 load_dotenv()
 
 app = Flask(__name__)
 cors = CORS(app)
-metrics = PrometheusMetrics(app) 
+metrics = PrometheusMetrics(app)
+
 
 @metrics.counter(
-    'by_endpoint_counter', 'Request count by endpoint',
-    labels={'endpoint': lambda: request.endpoint}
+    "by_endpoint_counter",
+    "Request count by endpoint",
+    labels={"endpoint": lambda: request.endpoint},
 )
-
 @app.post("/add_restaurant")
 @cross_origin()
 def add_restaurant():
@@ -44,6 +48,7 @@ def add_restaurant():
                     res_address,
                     res_avg_time,
                     res_price_range,
+                    requests.get("https://foodish-api.com/api/").json()["image"],
                 ),
             )
             res_id = cursor.fetchone()[0]
@@ -69,6 +74,7 @@ def add_menu_item():
     data = request.get_json()
     name = data["name"]
     price = data["price"]
+    image = requests.get("https://foodish-api.com/api/").json()["image"]
 
     connection = psycopg2.connect(os.getenv("DATABASE_URL"))
 
@@ -79,11 +85,12 @@ def add_menu_item():
                 (
                     name,
                     price,
+                    image
                 ),
             )
             menu_item_id = cursor.fetchone()[0]
 
-    return jsonify({"menu_item": [menu_item_id, name, price]})
+    return jsonify({"menu_item": [menu_item_id, name, price, image]})
 
 
 @app.get("/get_menu_items")
@@ -123,8 +130,7 @@ def add_menu():
 @app.get("/get_menu_by_id")
 @cross_origin()
 def get_menu_by_id():
-    data = request.get_json()
-    restaurant_id = data["restaurant_id"]
+    restaurant_id = request.args.get("restaurant_id")
     connection = psycopg2.connect(os.getenv("DATABASE_URL"))
     with connection:
         with connection.cursor() as cursor:
