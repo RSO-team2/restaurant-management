@@ -77,7 +77,7 @@ def add_menu_item():
             )
             menu_item_id = cursor.fetchone()[0]
 
-    return jsonify({"menu_item_id": menu_item_id})
+    return jsonify({"menu_item": [menu_item_id, name, price]})
 
 
 @app.get("/get_menu_items")
