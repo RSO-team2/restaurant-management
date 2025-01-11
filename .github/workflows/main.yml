@@ -55,10 +55,16 @@ jobs:
         - name: Save DigitalOcean kubeconfig with short-lived credentials
           run: doctl kubernetes cluster kubeconfig save --expiry-seconds 1800 ${{ secrets.CLUSTER_NAME }}
   
-        - name: Create Kubernetes Secret
+        - name: Create Kubernetes Databse Secret
           run: |
             kubectl create secret generic database-url-secret \
             --from-literal=DATABASE_URL=${{ secrets.DATABASE_URL }} --dry-run=client \
+            --output yaml | kubectl apply -f - --insecure-skip-tls-verify --validate=false
+
+        - name: Create Kubernetes Auth Endpoint Secret
+          run: |
+            kubectl create secret generic auth-endpoint-secret \
+            --from-literal=AUTH_ENDPOINT=${{ secrets.AUTH_ENDPOINT }} --dry-run=client \
             --output yaml | kubectl apply -f - --insecure-skip-tls-verify --validate=false
   
         - name: Deploy to DigitalOcean Kubernetes

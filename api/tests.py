@@ -1,3 +1,5 @@
+import os
+
 import unittest
 from unittest.mock import patch, MagicMock
 import json
@@ -10,6 +12,8 @@ class TestRestaurantAPI(unittest.TestCase):
     
     @patch('psycopg2.connect')
     def test_add_restaurant(self, mock_connect):
+        os.environ["AUTH_ENDPOINT"] = "http://mock_auth_endpoint"
+
         # Mock the context managers
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
