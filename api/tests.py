@@ -25,7 +25,8 @@ class TestRestaurantAPI(unittest.TestCase):
             "rating": 4.5,
             "address": "123 Test St",
             "average_time": 30,
-            "price_range": "$$"
+            "price_range": "$$",
+            "user_id": 1
         }
 
         response = self.app.post('/add_restaurant',
