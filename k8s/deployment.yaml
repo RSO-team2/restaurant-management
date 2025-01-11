@@ -26,14 +26,14 @@ spec:
             - containerPort: 5003
           livenessProbe:
             httpGet:
-              path: /209.38.113.107/health
+              path: /health
               port: 5003
             initialDelaySeconds: 5
             periodSeconds: 10
             failureThreshold: 3
           readinessProbe:
             httpGet:
-              path: /209.38.113.107/health
+              path: /health
               port: 5003
             initialDelaySeconds: 5
             periodSeconds: 10
