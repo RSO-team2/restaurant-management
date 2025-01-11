@@ -53,6 +53,7 @@ def add_restaurant():
                 ),
             )
             res_id = cursor.fetchone()[0]
+            
 
     return jsonify({"restaurant_id": res_id})
 
