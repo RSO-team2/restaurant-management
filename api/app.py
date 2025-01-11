@@ -26,6 +26,12 @@ metrics.info("app_info", "Restaurant Management API Info", version="1.0.0")
     "Request count by endpoint",
     labels={"endpoint": lambda: request.endpoint},
 )
+
+@app.route('/health')
+def health_check():
+    return "Service is healthy", 200
+
+    
 @app.post("/add_restaurant")
 @cross_origin()
 def add_restaurant():
