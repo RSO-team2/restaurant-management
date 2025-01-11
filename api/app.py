@@ -2,9 +2,10 @@ import os
 import psycopg2
 import requests
 from dotenv import load_dotenv
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, Response
 from flask_cors import CORS, cross_origin
-from prometheus_flask_exporter import PrometheusMetrics
+from prometheus_client import Counter, generate_latest
+
 
 ADD_RESTAURANT = "INSERT INTO restaurants (name, type, rating, address, average_time, price_range, image) VALUES (%s,%s,%s,%s,%s,%s,%s) RETURNING id"
 ADD_MENU_ITEM = (
@@ -15,17 +16,19 @@ load_dotenv()
 
 app = Flask(__name__)
 cors = CORS(app)
-metrics = PrometheusMetrics(app)
 
+# Example metric: A counter for requests
+REQUEST_COUNT = Counter('request_count', 'Total number of requests')
 
-metrics.info("app_info", "Restaurant Management API Info", version="1.0.0")
+@app.route('/')
+def home():
+    REQUEST_COUNT.inc()  
+    return "Welcome to the Restaurant Manager!"
 
-
-@metrics.counter(
-    "by_endpoint_counter",
-    "Request count by endpoint",
-    labels={"endpoint": lambda: request.endpoint},
-)
+# Expose /metrics for Prometheus
+@app.route('/metrics')
+def metrics():
+    return Response(generate_latest(), content_type='text/plain')
 
 def check_database_connection():
     try:
