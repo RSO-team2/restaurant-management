@@ -120,7 +120,7 @@ def get_menu_by_id():
     connection = psycopg2.connect(os.getenv("DATABASE_URL"))
     with connection:
         with connection.cursor() as cursor:
-            cursor.execute("SELECT * FROM menus WHERE id = %s", (restaurant_id,))
+            cursor.execute("SELECT * FROM menus WHERE restaurant_id = %s", (restaurant_id,))
             menu = cursor.fetchone()
             menu_items = menu[2]
     return jsonify({"menu_items": menu_items})
