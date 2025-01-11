@@ -140,7 +140,7 @@ def get_menu_by_id():
             menu_items_data = []
             for item in menu_items:
                 cursor.execute("SELECT * FROM menu_items WHERE id = %s", (item,))
-                menu_items_data.append(cursor.fetchone())
+                menu_items_data.append(cursor.fetchone()[0])
     return jsonify({"menu_items": menu_items_data})
 
 

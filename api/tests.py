@@ -140,6 +140,8 @@ class TestRestaurantAPI(unittest.TestCase):
                               data=json.dumps(test_data),
                               content_type='application/json')
         
+        print(response.data)
+        
         self.assertEqual(response.status_code, 200)
         response_data = json.loads(response.data)
         self.assertEqual(response_data['menu_items'], [1, 2, 3])
