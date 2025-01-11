@@ -2,6 +2,7 @@ import unittest
 from unittest.mock import patch, MagicMock
 import json
 from app import app
+import os
 
 class TestRestaurantAPI(unittest.TestCase):
     def setUp(self):
@@ -9,16 +10,25 @@ class TestRestaurantAPI(unittest.TestCase):
         self.app.testing = True
     
     @patch('psycopg2.connect')
-    def test_add_restaurant(self, mock_connect):
-        # Mock the context managers
+    @patch('requests.get')
+    @patch('requests.post')
+    def test_add_restaurant(self, mock_post, mock_get, mock_connect):
+        # Mock the database connection and cursor
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
         mock_connect.return_value = mock_conn
         mock_conn.__enter__.return_value = mock_conn
         mock_conn.cursor.return_value = mock_cursor
         mock_cursor.__enter__.return_value = mock_cursor
-        mock_cursor.fetchone.return_value = [1]
+        mock_cursor.fetchone.return_value = [1]  # Mock restaurant ID
 
+        # Mock the external API call to get the restaurant image
+        mock_get.return_value = MagicMock(status_code=200, json=lambda: {"image": "http://example.com/restaurant.jpg"})
+
+        # Mock the external API call to link the restaurant to the user
+        mock_post.return_value = MagicMock(status_code=200)
+
+        # Test data for the POST request
         test_data = {
             "name": "Test Restaurant",
             "type": "Italian",
@@ -29,13 +39,38 @@ class TestRestaurantAPI(unittest.TestCase):
             "user_id": 1
         }
 
+        # Make the POST request to the endpoint
         response = self.app.post('/add_restaurant',
-                               data=json.dumps(test_data),
-                               content_type='application/json')
-        
+                                 data=json.dumps(test_data),
+                                 content_type='application/json')
+
+        # Validate the response
         self.assertEqual(response.status_code, 200)
         response_data = json.loads(response.data)
         self.assertEqual(response_data['restaurant_id'], 1)
+
+        # Validate the external API call to get the image
+        mock_get.assert_called_once_with("https://foodish-api.com/api/")
+        # Validate the external API call to link the restaurant to the user
+        mock_post.assert_called_once_with(
+            f"{os.getenv('AUTH_ENDPOINT')}/api/link_restaurant",
+            json={"restaurant_id": 1, "user_id": 1},
+            headers={"Content-Type": "application/json"}
+        )
+
+        # Validate the database interaction
+        mock_cursor.execute.assert_called_once_with(
+            "INSERT INTO restaurants (name, type, rating, address, average_time, price_range, image) VALUES (%s,%s,%s,%s,%s,%s,%s) RETURNING id",
+            (
+                "Test Restaurant",
+                "Italian",
+                4.5,
+                "123 Test St",
+                30,
+                "$$",
+                "http://example.com/restaurant.jpg",
+            )
+        )
 
     @patch('psycopg2.connect')
     def test_get_restaurants(self, mock_connect):
