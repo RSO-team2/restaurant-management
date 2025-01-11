@@ -143,7 +143,7 @@ class TestRestaurantAPI(unittest.TestCase):
         
         self.assertEqual(response.status_code, 200)
         response_data = json.loads(response.data)
-        self.assertEqual(response_data['menu_items'], [1, 2, 3])
+        self.assertEqual(response_data['menu_items'], [[1], [2], [3]])
         
         # Verify the SQL queries were called correctly
         mock_cursor.execute.assert_any_call("SELECT * FROM menus WHERE restaurant_id = %s", ('1',))
