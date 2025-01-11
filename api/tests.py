@@ -123,28 +123,33 @@ class TestRestaurantAPI(unittest.TestCase):
 
     @patch('psycopg2.connect')
     def test_get_menu_by_id(self, mock_connect):
-        # Mock the context managers
+        # Mock database connection
         mock_conn = MagicMock()
         mock_cursor = MagicMock()
         mock_connect.return_value = mock_conn
         mock_conn.__enter__.return_value = mock_conn
         mock_conn.cursor.return_value = mock_cursor
         mock_cursor.__enter__.return_value = mock_cursor
-        mock_cursor.fetchone.return_value = (1, 1, [1, 2, 3])
-
-        test_data = {
-            "restaurant_id": 1
-        }
-
-        response = self.app.get('/get_menu_by_id',
-                              data=json.dumps(test_data),
-                              content_type='application/json')
         
-        print(response.data)
+        # Mock the first query that gets the menu
+        mock_cursor.fetchone.side_effect = [
+            (1, 1, [1, 2, 3]),  # First fetchone returns menu with item IDs
+            (1,),  # Second fetchone for first menu item
+            (2,),  # Third fetchone for second menu item
+            (3,)   # Fourth fetchone for third menu item
+        ]
+
+        response = self.app.get('/get_menu_by_id?restaurant_id=1')
         
         self.assertEqual(response.status_code, 200)
         response_data = json.loads(response.data)
         self.assertEqual(response_data['menu_items'], [1, 2, 3])
+        
+        # Verify the SQL queries were called correctly
+        mock_cursor.execute.assert_any_call("SELECT * FROM menus WHERE restaurant_id = %s", ('1',))
+        mock_cursor.execute.assert_any_call("SELECT * FROM menu_items WHERE id = %s", (1,))
+        mock_cursor.execute.assert_any_call("SELECT * FROM menu_items WHERE id = %s", (2,))
+        mock_cursor.execute.assert_any_call("SELECT * FROM menu_items WHERE id = %s", (3,))
 
 if __name__ == '__main__':
     unittest.main()
