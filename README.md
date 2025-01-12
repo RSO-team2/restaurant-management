@@ -2,15 +2,18 @@
 
 ## Purpose and API Documentation
 
-[Postman API Documentation](https://documenter.getpostman.com/view/26454602/2sAYBbd8zB)
+[Postman API Documentation](https://documenter.getpostman.com/view/26454602/2sAYQWKZRA)
 
 The API serves as the dedicated microservice for interaction with restaurants, menus, and menu_items databases. For more information regarding those databases, please refer to the following repository: [Database Setup](https://github.com/RSO-team2/database_setup)
 
 ### Use-Cases
 
 1. Add a new restaurant.
-2. Add a new menu item by restaurant.
-3. Add a new menu by restaurant.
+2. Retrieve all restaurants. 
+3. Add a new menu item by restaurant.
+4. Retrieve menu items.
+5. Add a new menu by restaurant.
+6. Retrieve a menu by id.
 
 
 ## Developer Setup
