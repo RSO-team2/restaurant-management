@@ -17,18 +17,18 @@ load_dotenv()
 app = Flask(__name__)
 cors = CORS(app)
 
-# Attach Prometheus metrics to the Flask app
 metrics = PrometheusMetrics(app)
-
-# Automatically collect standard metrics like request count, response duration, and more
 metrics.info('app_info', 'Restaurant Management API Info', version='1.0.0')
 
 def check_database_connection():
+     """
+    Checks if the database connection is active and operational.
+    Raises an exception if the database is not reachable.
+    """
     try:
-        # Connect to your PostgreSQL database
         connection = psycopg2.connect(os.getenv("DATABASE_URL"))
         cursor = connection.cursor()
-        cursor.execute('SELECT 1')  # Simple query to check if the database is responsive
+        cursor.execute('SELECT 1') 
         connection.close()
         print("Database is connected!")
     except OperationalError as err:
@@ -36,6 +36,10 @@ def check_database_connection():
 
 @app.route('/health')
 def health_check():
+    """
+    Health check endpoint to verify if the service and database are operational.
+    Returns HTTP 200 if healthy, otherwise HTTP 500.
+    """
     try:
         check_database_connection()
         return "Service is healthy", 200
@@ -46,6 +50,10 @@ def health_check():
 @app.post("/add_restaurant")
 @cross_origin()
 def add_restaurant():
+     """
+    Add a new restaurant to the database.
+    Fetches data from the request body, adds a restaurant entry, and links it to a user.
+    """
     data = request.get_json()
     res_name = data["name"]
     res_type = data["type"]
@@ -84,6 +92,9 @@ def add_restaurant():
 @app.get("/get_restaurants")
 @cross_origin()
 def get_restaurants():
+    """
+    Fetch all restaurants from the database.
+    """
     connection = psycopg2.connect(os.getenv("DATABASE_URL"))
     with connection:
         with connection.cursor() as cursor:
@@ -96,6 +107,10 @@ def get_restaurants():
 @app.post("/add_menu_item")
 @cross_origin()
 def add_menu_item():
+    """
+    Add a new menu item to the database.
+    Fetches data from the request body and inserts a menu item with a random image.
+    """
     data = request.get_json()
     name = data["name"]
     price = data["price"]
@@ -117,6 +132,9 @@ def add_menu_item():
 @app.get("/get_menu_items")
 @cross_origin()
 def get_menu_items():
+    """
+    Fetch all menu items from the database.
+    """
     connection = psycopg2.connect(os.getenv("DATABASE_URL"))
     with connection:
         with connection.cursor() as cursor:
@@ -128,6 +146,10 @@ def get_menu_items():
 @app.post("/add_menu")
 @cross_origin()
 def add_menu():
+    """
+    Add a menu to a restaurant.
+    Fetches restaurant ID and menu items from the request body, then inserts the menu.
+    """
     data = request.get_json()
     restaurant_id = data["restaurant_id"]
     items = data["items"]
@@ -151,6 +173,10 @@ def add_menu():
 @app.get("/get_menu_by_id")
 @cross_origin()
 def get_menu_by_id():
+    """
+    Fetch the menu for a specific restaurant by its ID.
+    Queries the database for the menu and its associated items.
+    """
     restaurant_id = request.args.get("restaurant_id")
     connection = psycopg2.connect(os.getenv("DATABASE_URL"))
     with connection:
