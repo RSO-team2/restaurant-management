@@ -167,25 +167,6 @@ def get_menu_by_id():
     return jsonify({"menu_items": menu_items_data})
 
 
-@app.post("/update_order_status")
-@cross_origin()
-def update_order_status():
-    data = request.get_json()
-    order_id = data["order_id"]
-    status = data["status"]
-
-    connection = psycopg2.connect(os.getenv("DATABASE_URL"))
-
-    with connection:
-        with connection.cursor() as cursor:
-            cursor.execute(
-                "UPDATE orders SET status = %s WHERE id = %s",
-                (status, order_id),
-            )
-
-    return jsonify({"message": f"order '{order_id}' updated to '{status}'"})
-
-
 if __name__ == "__main__":
     print("Starting app...")
     app.run(host="0.0.0.0", port=5003)
